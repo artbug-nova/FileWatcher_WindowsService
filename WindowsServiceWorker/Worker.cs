@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using WindowsServiceWorker.Models;
@@ -20,12 +21,35 @@ namespace WindowsServiceWorker
             _workerService = workerService;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public override Task StartAsync(CancellationToken cancellationToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            _workerService.Start();
+            return base.StartAsync(cancellationToken);
+        }
+
+        public override async Task StopAsync(CancellationToken stoppingToken)
+        {
+            _workerService.Stop();
+            await base.StopAsync(stoppingToken);
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        {
+            try
             {
-                _logger.LogInformation($"Worker Start {_basicConfiguration.Name} {_workerService.GetName()}");
-                await Task.Delay(10000, stoppingToken);
+                await BackgroundProcessing(cancellationToken);
+            }
+            catch (Exception exp)
+            {
+                _logger.LogError(0, exp, $"Service failed." + Environment.NewLine + exp.Message);
+            }
+        }
+
+        private async Task BackgroundProcessing(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(_basicConfiguration.Delay), cancellationToken);
             }
         }
     }

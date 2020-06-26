@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WindowsServiceWorker.Models
+﻿namespace WindowsServiceWorker.Models
 {
     public class BasicConfiguration
     {
-        public String Name { get; set; }
+        public int Delay { get; set; }
     }
 }
