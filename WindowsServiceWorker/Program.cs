@@ -23,7 +23,16 @@ namespace WindowsServiceWorker
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
                 .Enrich.FromLogContext()
-                    .WriteTo.File($"{path}/logs/log-.log", rollingInterval: RollingInterval.Day)
+                    .WriteTo.Console(
+                        LogEventLevel.Information,
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {TraceIdentifier} {Message}{NewLine}{Exception}")
+                    .WriteTo.EventLog("FileServiceApi", manageEventSource: true)
+                    .WriteTo.File($"{path}/logs/log-.log",
+                        LogEventLevel.Information,
+                        rollingInterval: RollingInterval.Day,
+                        rollOnFileSizeLimit:true,
+                        fileSizeLimitBytes: 100_000_000,
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {TraceIdentifier} {Message}{NewLine}{Exception}")
                     .CreateLogger();
 
             CreateHostBuilder(args).Build().Run();
